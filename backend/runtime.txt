@@ -1,0 +1,2 @@
+# Runtime for Railway/Render (matches local environment — upgrade to 3.11+ recommended for production)
+python-3.9.6

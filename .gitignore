@@ -1,0 +1,39 @@
+# Environment variables — NEVER commit sensitive .env files
+.env
+.env*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+backend/venv/
+env/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+frontend/out/
+frontend/dist/
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

@@ -1,0 +1,4 @@
+# Railway / Render deployment configuration
+# This file tells the platform how to start the backend
+
+web: uvicorn main:app --host 0.0.0.0 --port $PORT

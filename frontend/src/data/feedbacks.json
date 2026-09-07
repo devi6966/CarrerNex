@@ -1,0 +1,72 @@
+[
+  {
+    "id": "fb-1788707038006-ftia",
+    "author": "BIBHU",
+    "role": "GEC",
+    "rating": 5,
+    "tag": "Career Roadmap",
+    "quote": "This website help me decide and move in my career in cloud engineering... thanks to Mr.Devi sir!",
+    "createdAt": "2026-09-06T15:03:58.006Z",
+    "likes": 24
+  },
+  {
+    "id": "fb-1788685516966-rjm1",
+    "author": "spandan",
+    "role": "gec",
+    "rating": 5,
+    "tag": "Overall Platform",
+    "quote": "Nice work... a huge respect to this website developer and owner!",
+    "createdAt": "2026-09-06T09:05:16.966Z",
+    "likes": 31
+  },
+  {
+    "id": "fb-1788685399412-f41b",
+    "author": "Rahul Verma",
+    "role": "SDE-1 @ Bangalore",
+    "rating": 5,
+    "tag": "ATS Resume Scorer",
+    "quote": "CareerNex helped me improve my ATS match score from 45% to 88%. Landed interviews at 3 product companies within 2 weeks!",
+    "createdAt": "2026-09-06T09:03:19.412Z",
+    "likes": 18
+  },
+  {
+    "id": "fb-1",
+    "author": "Ananya Singh",
+    "role": "B.Tech CSE",
+    "rating": 5,
+    "tag": "ATS Resume Scorer",
+    "quote": "The ATS scorer's phrase weakness feedback is spot on! It helped me fix vague points and get more shortlists.",
+    "createdAt": "2026-09-04T10:30:00.000Z",
+    "likes": 19
+  },
+  {
+    "id": "fb-2",
+    "author": "Karan Mehta",
+    "role": "Final Year Student",
+    "rating": 5,
+    "tag": "HR Voice Interview",
+    "quote": "HR voice mode felt exactly like speaking to a real interviewer over Zoom. The instant feedback is super helpful.",
+    "createdAt": "2026-09-03T15:20:00.000Z",
+    "likes": 27
+  },
+  {
+    "id": "fb-3",
+    "author": "Priya Nair",
+    "role": "MCA Student",
+    "rating": 5,
+    "tag": "Technical Skill Quizzes",
+    "quote": "The MCQ quizzes have really challenging questions with clear explanations. It is a great way to test and improve skills.",
+    "createdAt": "2026-09-02T08:45:00.000Z",
+    "likes": 22
+  },
+  {
+    "id": "fb-4",
+    "author": "Devi Prasad",
+    "role": "React Developer Intern",
+    "rating": 5,
+    "tag": "Career Roadmap",
+    "quote": "The Career Roadmap broke down my entire prep into bite-sized weekly milestones. The recommended portfolio projects were incredibly helpful!",
+    "createdAt": "2026-09-01T18:10:00.000Z",
+    "likes": 35
+  }
+]
