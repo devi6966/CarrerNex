@@ -172,7 +172,7 @@ export default function HRInterview() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://carrernex.onrender.com";
 
   // ── Sync Mute Ref ──────────────────────────────────────────────────────────
   useEffect(() => {

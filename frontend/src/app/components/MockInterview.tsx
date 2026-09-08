@@ -192,7 +192,7 @@ export default function MockInterview() {
   const [viewMode, setViewMode] = useState<"focus" | "list">("focus");
   const [loadingStep, setLoadingStep] = useState("⚡ Synthesizing Placement Questions...");
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://carrernex.onrender.com";
 
   // Dynamic Loading Step Rotation
   useEffect(() => {

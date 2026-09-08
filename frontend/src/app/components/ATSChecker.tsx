@@ -72,7 +72,7 @@ export default function ATSChecker() {
   const [copiedKw, setCopiedKw] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://carrernex.onrender.com";
 
   // Dynamic step rotation during loading
   useEffect(() => {

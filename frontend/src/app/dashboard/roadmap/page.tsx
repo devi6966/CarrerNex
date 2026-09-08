@@ -39,7 +39,7 @@ interface RoadmapData {
 export default function RoadmapPage() {
   const { data: session } = useSession();
   const userKey = session?.user?.email ? encodeURIComponent(session.user.email.toLowerCase()) : "guest_user";
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://carrernex.onrender.com";
 
   // Form State
   const [step, setStep] = useState(1);
