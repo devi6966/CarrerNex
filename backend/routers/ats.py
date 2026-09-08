@@ -19,7 +19,6 @@ import json
 from typing import Annotated, List, Dict, Set, Tuple, Optional
 
 import pdfplumber
-import spacy
 import numpy as np
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
@@ -29,18 +28,17 @@ router = APIRouter(prefix="/api/ats", tags=["ATS Resume Checker"])
 
 # ── Load NLP Models with safe fallbacks ───────────────────────────────────────
 try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    nlp = spacy.blank("en")
-    if "sentencizer" not in nlp.pipe_names:
-        nlp.add_pipe("sentencizer")
-
-# Safe sentence embedding model
-try:
-    from sentence_transformers import SentenceTransformer
-    embedder = SentenceTransformer("all-MiniLM-L6-v2")
+    import spacy
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        nlp = spacy.blank("en")
+        if "sentencizer" not in nlp.pipe_names:
+            nlp.add_pipe("sentencizer")
 except Exception:
-    embedder = None
+    nlp = None
+
+embedder = None
 
 
 
@@ -317,6 +315,11 @@ def _analyze_action_impact(text: str) -> Tuple[float, List[str], List[str]]:
 # ── Helper: Semantic Keyword Matcher ──────────────────────────────────────────
 def _extract_jd_skills(jd_text: str) -> List[str]:
     """Extracts high-value skill terms and requirements from JD text."""
+    if nlp is None:
+        raw_words = re.findall(r"\b[a-zA-Z]{3,}\b", jd_text.lower())
+        clean_words = [w for w in raw_words if w not in GENERIC_STOP_WORDS and len(w) > 2]
+        return sorted(list(set(clean_words)))[:25]
+
     jd_doc = nlp(jd_text)
 
     words = [t.text.strip().lower() for t in jd_doc if t.is_alpha and not t.is_stop]
