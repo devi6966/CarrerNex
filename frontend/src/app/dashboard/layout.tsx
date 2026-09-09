@@ -2,14 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRazorpay } from "../../lib/useRazorpay";
+import { isUserPro } from "../../lib/userStore";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarImgError, setAvatarImgError] = useState(false);
   const { data: session } = useSession();
+  const { startPayment, loading: isPaying } = useRazorpay();
+  const [isPro, setIsPro] = useState(false);
+  const [proModal, setProModal] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsPro(isUserPro(session?.user?.email));
+    const handleUpdate = () => setIsPro(isUserPro(session?.user?.email));
+    window.addEventListener("careernex_user_data_updated", handleUpdate);
+    return () => window.removeEventListener("careernex_user_data_updated", handleUpdate);
+  }, [session]);
 
   const getInitials = (nameStr: string) => {
     if (!nameStr) return "U";
@@ -469,11 +481,64 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 fontWeight: 600,
                 display: "flex",
                 alignItems: "center",
-                gap: "0.35rem",
+                gap: "0.5rem",
               }}
               className="mobile-hide"
             >
-              Hi, <strong style={{ color: "#09090b", fontWeight: 700 }}>{getFirstName(userDisplayName)}</strong> 👋
+              <span>Hi, <strong style={{ color: "#09090b", fontWeight: 700 }}>{getFirstName(userDisplayName)}</strong> 👋</span>
+              {isPro ? (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.2rem 0.65rem",
+                    borderRadius: "9999px",
+                    background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    border: "1px solid #f59e0b",
+                    color: "#b45309",
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.03em",
+                    boxShadow: "0 1px 3px rgba(245, 158, 11, 0.2)",
+                  }}
+                  title="CareerNex Pro Active"
+                >
+                  👑 PRO
+                </span>
+              ) : (
+                <button
+                  onClick={() => {
+                    startPayment({
+                      userEmail: session?.user?.email,
+                      userName: session?.user?.name,
+                      amount: 99,
+                      onSuccess: (pid) => {
+                        setIsPro(true);
+                        setProModal(pid);
+                      },
+                    });
+                  }}
+                  disabled={isPaying}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.25rem 0.65rem",
+                    borderRadius: "6px",
+                    background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                    border: "none",
+                    color: "#ffffff",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    cursor: isPaying ? "not-allowed" : "pointer",
+                    boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  ⚡ {isPaying ? "Opening..." : "Upgrade ₹99"}
+                </button>
+              )}
             </span>
 
             {/* Main Page Button */}
@@ -626,6 +691,68 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main style={{ flex: 1, padding: "2.5rem 2rem", overflowY: "auto" }}>
           {children}
         </main>
+
+        {/* ── Pro Upgrade Success Celebration Modal ── */}
+        {proModal && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+          }}>
+            <div
+              className="glass-card"
+              style={{
+                maxWidth: 440,
+                width: "100%",
+                background: "#ffffff",
+                padding: "2.5rem",
+                borderRadius: "20px",
+                textAlign: "center",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <div style={{ fontSize: "3.2rem", marginBottom: "0.5rem" }}>👑</div>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+                Welcome to CareerNex Pro!
+              </h3>
+              <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.5rem", lineHeight: 1.5 }}>
+                Your payment of <strong>₹99</strong> was successful. Pro features have been unlocked for your account!
+              </p>
+              <div style={{
+                margin: "1.5rem 0",
+                padding: "0.85rem 1rem",
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: "12px",
+                color: "#166534",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.4rem",
+              }}>
+                <div>✓ Lifetime Pro Member Status Active</div>
+                <div>✓ Priority Gemini AI Processing</div>
+                <div style={{ fontSize: "0.75rem", color: "#15803d" }}>Payment ID: {proModal}</div>
+              </div>
+              <button
+                onClick={() => setProModal(null)}
+                className="btn-gradient"
+                style={{ width: "100%", padding: "0.85rem", fontWeight: 700 }}
+              >
+                Awesome, Let&apos;s Go! ➔
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
 

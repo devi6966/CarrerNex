@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRazorpay } from "../lib/useRazorpay";
+import { isUserPro } from "../lib/userStore";
 
 interface ReviewItem {
   id?: string;
@@ -15,6 +17,13 @@ interface ReviewItem {
 
 export default function Home() {
   const { data: session } = useSession();
+  const { startPayment, loading: isPaying, error: paymentError } = useRazorpay();
+  const [isPro, setIsPro] = useState(false);
+  const [paymentSuccessModal, setPaymentSuccessModal] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsPro(isUserPro(session?.user?.email));
+  }, [session]);
   const [reviews, setReviews] = useState<ReviewItem[]>([
     {
       id: "fb-1",
@@ -1807,17 +1816,27 @@ export default function Home() {
           {[
             {
               name: "Student Plan",
-              price: "$0",
+              price: "₹0",
+              period: "Free Forever",
               features: ["Unlimited resume scoring", "Level 1-3 Skill Quizzes", "Real-time voice coach practice", "Free career roadmap generator"],
               cta: "Launch Dashboard",
               popular: false,
+              isProPlan: false,
             },
             {
               name: "Pro Accelerator",
-              price: "$19",
-              features: ["Priority Gemini 2.0 Flash access", "Company-specific question banks", "AI video replay & pronunciation audit", "1-on-1 human mentor review"],
-              cta: "Upgrade to Pro",
+              price: "₹99",
+              period: "One-Time Access",
+              features: [
+                "Priority Gemini 2.0 Flash access",
+                "Unlimited ATS keyword & bullet rewrites",
+                "AI video & voice pronunciation audit",
+                "Company-specific mock question banks",
+                "Lifetime Pro Member Badge 👑",
+              ],
+              cta: isPro ? "👑 Pro Active" : isPaying ? "Opening Razorpay..." : "Upgrade to Pro (₹99)",
               popular: true,
+              isProPlan: true,
             },
           ].map((plan) => (
             <div
@@ -1836,7 +1855,7 @@ export default function Home() {
               {plan.popular && (
                 <div style={{
                   alignSelf: "flex-start",
-                  background: "#2563eb",
+                  background: isPro ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#2563eb",
                   color: "#ffffff",
                   fontSize: "0.6875rem",
                   fontWeight: 800,
@@ -1846,15 +1865,18 @@ export default function Home() {
                   marginTop: "-1.5rem",
                   marginBottom: "0.5rem",
                   letterSpacing: "0.05em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
                 }}>
-                  Recommended
+                  {isPro ? "👑 Current Plan" : "Most Popular"}
                 </div>
               )}
               <div>
                 <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>{plan.name}</h3>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginTop: "0.5rem" }}>
-                  <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#0f172a" }}>{plan.price}</span>
-                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>/ month</span>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem", marginTop: "0.5rem" }}>
+                  <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#0f172a" }}>{plan.price}</span>
+                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>/ {plan.period}</span>
                 </div>
               </div>
 
@@ -1864,22 +1886,131 @@ export default function Home() {
                 ))}
               </ul>
 
-              <Link href="/dashboard" style={{ textDecoration: "none", marginTop: "auto" }}>
+              {plan.isProPlan && !isPro ? (
                 <button
-                  className={plan.popular ? "btn-gradient" : "btn-ghost"}
+                  onClick={() => {
+                    startPayment({
+                      userEmail: session?.user?.email || "candidate@careernex.ai",
+                      userName: session?.user?.name || "Candidate",
+                      amount: 99,
+                      planName: "CareerNex Pro Accelerator",
+                      onSuccess: (pid) => {
+                        setIsPro(true);
+                        setPaymentSuccessModal(pid);
+                      },
+                    });
+                  }}
+                  disabled={isPaying}
+                  className="btn-gradient"
                   style={{
                     width: "100%",
-                    padding: "0.8rem 1rem",
+                    padding: "0.85rem 1rem",
                     fontWeight: 700,
                     fontSize: "0.9375rem",
+                    cursor: isPaying ? "not-allowed" : "pointer",
+                    marginTop: "auto",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
                   }}
                 >
-                  {plan.cta}
+                  <span>💳</span>
+                  <span>{isPaying ? "Opening Checkout..." : "Upgrade to Pro (₹99)"}</span>
                 </button>
-              </Link>
+              ) : (
+                <Link href="/dashboard" style={{ textDecoration: "none", marginTop: "auto" }}>
+                  <button
+                    className={plan.popular ? "btn-gradient" : "btn-ghost"}
+                    style={{
+                      width: "100%",
+                      padding: "0.8rem 1rem",
+                      fontWeight: 700,
+                      fontSize: "0.9375rem",
+                    }}
+                  >
+                    {plan.cta}
+                  </button>
+                </Link>
+              )}
             </div>
           ))}
         </div>
+
+        {paymentError && (
+          <div style={{ marginTop: "1.5rem", textAlign: "center", color: "#ef4444", fontSize: "0.875rem" }}>
+            ⚠️ {paymentError}
+          </div>
+        )}
+
+        {/* ── Payment Success Modal ── */}
+        {paymentSuccessModal && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+          }}>
+            <div
+              className="glass-card"
+              style={{
+                maxWidth: 440,
+                width: "100%",
+                background: "#ffffff",
+                padding: "2.5rem",
+                borderRadius: "20px",
+                textAlign: "center",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <div style={{ fontSize: "3.2rem", marginBottom: "0.5rem" }}>👑</div>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+                Welcome to CareerNex Pro!
+              </h3>
+              <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.5rem", lineHeight: 1.5 }}>
+                Your payment of <strong>₹99</strong> was successful. Pro features have been unlocked for your account!
+              </p>
+              <div style={{
+                margin: "1.5rem 0",
+                padding: "0.85rem 1rem",
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: "12px",
+                color: "#166534",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.4rem",
+              }}>
+                <div>✓ Lifetime Pro Access Activated</div>
+                <div>✓ Priority Gemini AI Processing</div>
+                <div style={{ fontSize: "0.75rem", color: "#15803d" }}>Payment ID: {paymentSuccessModal}</div>
+              </div>
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <Link href="/dashboard" style={{ flex: 1, textDecoration: "none" }}>
+                  <button className="btn-gradient" style={{ width: "100%", padding: "0.85rem", fontWeight: 700 }}>
+                    Go to Pro Dashboard ➔
+                  </button>
+                </Link>
+                <button
+                  onClick={() => setPaymentSuccessModal(null)}
+                  className="btn-ghost"
+                  style={{ padding: "0.85rem 1rem" }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}

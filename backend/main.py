@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import ats, hr, interview, test, roadmap
+from routers import ats, hr, interview, test, roadmap, payment
 
 # ── Load environment ──────────────────────────────────────────────────────────
 load_dotenv()
@@ -54,6 +54,7 @@ app.include_router(ats.router)
 app.include_router(interview.router)
 app.include_router(hr.router)
 app.include_router(roadmap.router)
+app.include_router(payment.router)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

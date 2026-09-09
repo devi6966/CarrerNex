@@ -23,6 +23,10 @@ export interface UserProfileData {
   activities: UserActivity[];
   metrics: UserMetrics;
   lastUpdated: number;
+  isPro?: boolean;
+  plan?: "FREE" | "PRO";
+  paymentId?: string;
+  upgradedAt?: number;
 }
 
 const STORAGE_PREFIX = "careernex_user_profile_";
@@ -201,4 +205,33 @@ export function clearUserHistory(email: string | null | undefined): void {
   const key = getUserStorageKey(email);
   localStorage.removeItem(key);
   window.dispatchEvent(new CustomEvent("careernex_user_data_updated", { detail: { email } }));
+}
+
+export function upgradeUserToPro(email?: string | null, paymentId?: string): UserProfileData {
+  const current = getUserData(email);
+  const updated: UserProfileData = {
+    ...current,
+    isPro: true,
+    plan: "PRO",
+    paymentId: paymentId || `pay_test_${Date.now()}`,
+    upgradedAt: Date.now(),
+    lastUpdated: Date.now(),
+  };
+
+  // Add activity log
+  updated.activities.unshift({
+    id: `act_${Date.now()}_pro`,
+    type: "HR Interview", // or general milestone
+    detail: "Upgraded to CareerNex Pro Accelerator (₹99 Lifetime)",
+    timestamp: Date.now(),
+  });
+
+  saveUserData(email, updated);
+  return updated;
+}
+
+export function isUserPro(email?: string | null): boolean {
+  if (typeof window === "undefined") return false;
+  const data = getUserData(email);
+  return Boolean(data.isPro || data.plan === "PRO");
 }
